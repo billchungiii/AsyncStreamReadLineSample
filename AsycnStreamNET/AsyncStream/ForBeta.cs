@@ -28,43 +28,36 @@ namespace System.Runtime.CompilerServices
 
 namespace System.Threading.Tasks.Sources
 {
-    /// <summary>Provides the core logic for implementing a manual-reset <see cref="IValueTaskSource"/> or <see cref="IValueTaskSource{TResult}"/>.</summary>
+
+    /// <summary>
+    /// reference from https://github.com/dotnet/coreclr/blob/master/src/System.Private.CoreLib/shared/System/Threading/Tasks/Sources/ManualResetValueTaskSourceCore.cs
+    /// </summary>
     /// <typeparam name="TResult"></typeparam>
     [StructLayout(LayoutKind.Auto)]
     public struct ManualResetValueTaskSourceCore<TResult>
     {
-        /// <summary>
-        /// The callback to invoke when the operation completes if <see cref="OnCompleted"/> was called before the operation completed,
-        /// or <see cref="ManualResetValueTaskSourceCoreShared.s_sentinel"/> if the operation completed before a callback was supplied,
-        /// or null if a callback hasn't yet been provided and the operation hasn't yet completed.
-        /// </summary>
+        
         private Action<object> _continuation;
-        /// <summary>State to pass to <see cref="_continuation"/>.</summary>
+      
         private object _continuationState;
-        /// <summary><see cref="ExecutionContext"/> to flow to the callback, or null if no flowing is required.</summary>
+      
         private ExecutionContext _executionContext;
-        /// <summary>
-        /// A "captured" <see cref="SynchronizationContext"/> or <see cref="TaskScheduler"/> with which to invoke the callback,
-        /// or null if no special context is required.
-        /// </summary>
+       
         private object _capturedContext;
-        /// <summary>Whether the current operation has completed.</summary>
+        
         private bool _completed;
-        /// <summary>The result with which the operation succeeded, or the default value if it hasn't yet completed or failed.</summary>
+      
         private TResult _result;
-        /// <summary>The exception with which the operation failed, or null if it hasn't yet completed or completed successfully.</summary>
+        
         private ExceptionDispatchInfo _error;
-        /// <summary>The current version of this value, used to help prevent misuse.</summary>
+      
         private short _version;
 
-        /// <summary>Gets or sets whether to force continuations to run asynchronously.</summary>
-        /// <remarks>Continuations may run asynchronously if this is false, but they'll never run synchronously if this is true.</remarks>
+        
         public bool RunContinuationsAsynchronously { get; set; }
-
-        /// <summary>Resets to prepare for the next operation.</summary>
+       
         public void Reset()
-        {
-            // Reset/update state for the next use/await of this instance.
+        {           
             _version++;
             _completed = false;
             _result = default;
@@ -75,27 +68,24 @@ namespace System.Threading.Tasks.Sources
             _continuationState = null;
         }
 
-        /// <summary>Completes with a successful result.</summary>
-        /// <param name="result">The result.</param>
+        
         public void SetResult(TResult result)
         {
             _result = result;
             SignalCompletion();
         }
 
-        /// <summary>Complets with an error.</summary>
-        /// <param name="error"></param>
+        
         public void SetException(Exception error)
         {
             _error = ExceptionDispatchInfo.Capture(error);
             SignalCompletion();
         }
 
-        /// <summary>Gets the operation version.</summary>
+        
         public short Version => _version;
 
-        /// <summary>Gets the status of the operation.</summary>
-        /// <param name="token">Opaque value that was provided to the <see cref="ValueTask"/>'s constructor.</param>
+       
         public ValueTaskSourceStatus GetStatus(short token)
         {
             ValidateToken(token);
@@ -106,8 +96,7 @@ namespace System.Threading.Tasks.Sources
                 ValueTaskSourceStatus.Faulted;
         }
 
-        /// <summary>Gets the result of the operation.</summary>
-        /// <param name="token">Opaque value that was provided to the <see cref="ValueTask"/>'s constructor.</param>
+        /
 
         public TResult GetResult(short token)
         {
@@ -121,11 +110,7 @@ namespace System.Threading.Tasks.Sources
             return _result;
         }
 
-        /// <summary>Schedules the continuation action for this operation.</summary>
-        /// <param name="continuation">The continuation to invoke when the operation has completed.</param>
-        /// <param name="state">The state object to pass to <paramref name="continuation"/> when it's invoked.</param>
-        /// <param name="token">Opaque value that was provided to the <see cref="ValueTask"/>'s constructor.</param>
-        /// <param name="flags">The flags describing the behavior of the continuation.</param>
+       
         public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
         {
             if (continuation == null)
@@ -156,13 +141,7 @@ namespace System.Threading.Tasks.Sources
                 }
             }
 
-            // We need to set the continuation state before we swap in the delegate, so that
-            // if there's a race between this and SetResult/Exception and SetResult/Exception
-            // sees the _continuation as non-null, it'll be able to invoke it with the state
-            // stored here.  However, this also means that if this is used incorrectly (e.g.
-            // awaited twice concurrently), _continuationState might get erroneously overwritten.
-            // To minimize the chances of that, we check preemptively whether _continuation
-            // is already set to something other than the completion sentinel.
+           
 
             object oldContinuation = _continuation;
             if (oldContinuation == null)
@@ -172,8 +151,7 @@ namespace System.Threading.Tasks.Sources
             }
 
             if (oldContinuation != null)
-            {
-                // Operation already completed, so we need to queue the supplied callback.
+            {               
                 if (!ReferenceEquals(oldContinuation, ManualResetValueTaskSourceCoreShared.s_sentinel))
                 {
                     ManualResetValueTaskSourceCoreShared.ThrowInvalidOperationException();
@@ -207,8 +185,7 @@ namespace System.Threading.Tasks.Sources
             }
         }
 
-        /// <summary>Ensures that the specified token matches the current version.</summary>
-        /// <param name="token">The token supplied by <see cref="ValueTask"/>.</param>
+       
         private void ValidateToken(short token)
         {
             if (token != _version)
@@ -216,8 +193,7 @@ namespace System.Threading.Tasks.Sources
                 ManualResetValueTaskSourceCoreShared.ThrowInvalidOperationException();
             }
         }
-
-        /// <summary>Signals that that the operation has completed.  Invoked after the result or error has been set.</summary>
+        
         private void SignalCompletion()
         {
             if (_completed)
@@ -242,11 +218,7 @@ namespace System.Threading.Tasks.Sources
             }
         }
 
-        /// <summary>
-        /// Invokes the continuation with the appropriate captured context / scheduler.
-        /// This assumes that if <see cref="_executionContext"/> is not null we're already
-        /// running within that <see cref="ExecutionContext"/>.
-        /// </summary>
+       
         private void InvokeContinuation()
         {
             switch (_capturedContext)
@@ -284,13 +256,12 @@ namespace System.Threading.Tasks.Sources
         }
     }
 
-    internal static class ManualResetValueTaskSourceCoreShared 
+    internal static class ManualResetValueTaskSourceCoreShared
     {
-
         internal static void ThrowInvalidOperationException() => throw new InvalidOperationException();
 
         internal static readonly Action<object> s_sentinel = CompletionSentinel;
-        private static void CompletionSentinel(object _) // named method to aid debugging
+        private static void CompletionSentinel(object _) 
         {
             Debug.Fail("The sentinel delegate should never be invoked.");
             ThrowInvalidOperationException();

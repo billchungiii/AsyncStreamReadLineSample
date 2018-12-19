@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks.Sources;
 
-namespace System.Threading.Tasks
-{
-    using System.Runtime.CompilerServices;
-    using System.Threading.Tasks.Sources;
 
+namespace System.Threading.Tasks{
+   
     internal struct ManualResetValueTaskSourceLogic<TResult>
     {
         private ManualResetValueTaskSourceCore<TResult> _core;

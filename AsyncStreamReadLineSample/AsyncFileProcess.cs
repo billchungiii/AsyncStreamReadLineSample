@@ -43,7 +43,7 @@ namespace AsyncStreamReadLineSample
 
         private void Dispose(bool disposing)
         {
-            if (!this._disposed)
+            if (!_disposed)
             {
                 if (_reader != null)
                 {

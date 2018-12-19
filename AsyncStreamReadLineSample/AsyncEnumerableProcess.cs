@@ -49,10 +49,7 @@ namespace AsyncStreamReadLineSample
         }
         async public ValueTask DisposeAsync()
         {
-            await Task.Run(() =>
-            {
-                Dispose();
-            });
+            await Task.Run(() => Dispose());
         }
 
         private void Dispose()
@@ -63,7 +60,7 @@ namespace AsyncStreamReadLineSample
 
         private void Dispose(bool disposing)
         {
-            if (!this._disposed)
+            if (!_disposed)
             {
                 if (_reader != null)
                 {

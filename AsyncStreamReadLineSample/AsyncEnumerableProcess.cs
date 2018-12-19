@@ -43,9 +43,8 @@ namespace AsyncStreamReadLineSample
         }
         async public ValueTask<bool> MoveNextAsync()
         {
-            var result = await _reader.ReadLineAsync();
-            Current = result;
-            return result != null;
+            Current = await _reader.ReadLineAsync();          
+            return Current != null;
         }
         async public ValueTask DisposeAsync()
         {

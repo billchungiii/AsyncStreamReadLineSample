@@ -23,7 +23,7 @@ namespace AsycnStreamNET
             finally
             {
                await enumerator.DisposeAsync();
-            }
+            }            
         }
     }
 
@@ -48,10 +48,7 @@ namespace AsycnStreamNET
         }
         async public ValueTask DisposeAsync()
         {
-            await Task.Run(() =>
-            {
-                Dispose();
-            });
+            await Task.Run(() => Dispose());            
         }
 
         private void Dispose()

@@ -3,56 +3,36 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace AsyncStreamReadLineSample
 {
-    public class AsyncEnumerableProcess
-    {
-        async static public IAsyncEnumerable<string> ReadLineAsync(string path)
-        {
-
-            var enumerator = new AsyncEnumerator(path);
-            try
-            {
-                while (await enumerator.MoveNextAsync())
-                {
-                    await Task.Delay(100);
-                    yield return enumerator.Current;
-                }
-            }
-            finally
-            {
-                await enumerator.DisposeAsync();
-            }
-        }
-    }
-
-    internal class AsyncEnumerator : IAsyncEnumerator<string>
+    sealed class AsyncFileProcess : IAsyncEnumerable<string>, IAsyncEnumerator<string>
     {
         private readonly StreamReader _reader;
 
         private bool _disposed;
-
-        public string Current { get; private set; }
-
-        public AsyncEnumerator(string path)
+        public AsyncFileProcess(string path)
         {
             _reader = File.OpenText(path);
             _disposed = false;
         }
+
+        public string Current { get; private set; }
+        public IAsyncEnumerator<string> GetAsyncEnumerator()
+        {
+            return this;
+        }
         async public ValueTask<bool> MoveNextAsync()
         {
+            await Task.Delay(100);
             var result = await _reader.ReadLineAsync();
             Current = result;
             return result != null;
         }
+
         async public ValueTask DisposeAsync()
         {
-            await Task.Run(() =>
-            {
-                Dispose();
-            });
+            await Task.Run(() => Dispose());
         }
 
         private void Dispose()

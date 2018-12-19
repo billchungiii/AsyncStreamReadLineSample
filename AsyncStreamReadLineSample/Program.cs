@@ -7,7 +7,7 @@ namespace AsyncStreamReadLineSample
     {
         async static Task Main(string[] args)
         {
-            var path = "SourceFile.txt";           
+            var path = "SourceFile.txt";
 
             await Run(InnerProcess.ReadLineAsync(path), "InnerProcess");
             await Run(DelegateProcess.ReadLineAsync(path, (x) => Console.WriteLine(x)), "DelegateProcess");
@@ -19,18 +19,35 @@ namespace AsyncStreamReadLineSample
                     Console.WriteLine(item);
                 }
             }), "EnumerableProcess");
-            await Run(Task.Run(async ()=>
+
+            await Run(Task.Run(async () =>
+            {
+                var process = new AsyncFileProcess(path);
+                try
+                {
+                    await foreach (var s in process)
+                    {
+                        Console.WriteLine(s);
+                    }
+                }
+                finally
+                {
+                    await process.DisposeAsync();
+                }
+            }), "AsyncFileProcess");
+
+            await Run(Task.Run(async () =>
             {
                 await foreach (var item in AsyncEnumerableProcess.ReadLineAsync(path))
                 {
                     Console.WriteLine(item);
                 };
-               
+
             }), "AsyncEnumerableProcess");
 
             Console.ReadLine();
         }
-        async static Task Run(Task task , string processName)
+        async static Task Run(Task task, string processName)
         {
             Console.WriteLine($"==={processName} Start===");
             await task;

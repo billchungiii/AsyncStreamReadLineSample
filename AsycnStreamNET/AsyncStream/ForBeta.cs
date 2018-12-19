@@ -96,8 +96,6 @@ namespace System.Threading.Tasks.Sources
                 ValueTaskSourceStatus.Faulted;
         }
 
-        /
-
         public TResult GetResult(short token)
         {
             ValidateToken(token);

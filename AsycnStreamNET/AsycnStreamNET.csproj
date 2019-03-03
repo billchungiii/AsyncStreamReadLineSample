@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncEnumerableProcess.cs" />
+    <Compile Include="AsyncFileProcess.cs" />
     <Compile Include="AsyncStream\Asyncs.cs" />
     <Compile Include="AsyncStream\ForBeta.cs" />
     <Compile Include="Program.cs" />

@@ -11,7 +11,12 @@ namespace AsycnStreamNET
         async static Task Main(string[] args)
         {
             var path = "SourceFile.txt";
-            await foreach (var item in AsyncEnumerableProcess.ReadLineAsync(path))
+            //await foreach (var item in AsyncEnumerableProcess.ReadLineAsync(path))
+            //{
+            //    Console.WriteLine(item);
+            //};
+
+            await foreach (var item in new AsyncFileProcess(path))
             {
                 Console.WriteLine(item);
             };

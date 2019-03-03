@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AsyncStreamReadLineSample
@@ -18,10 +19,7 @@ namespace AsyncStreamReadLineSample
         }
 
         public string Current { get; private set; }
-        public IAsyncEnumerator<string> GetAsyncEnumerator()
-        {
-            return this;
-        }
+       
         async public ValueTask<bool> MoveNextAsync()
         {
             await Task.Delay(100);
@@ -50,6 +48,11 @@ namespace AsyncStreamReadLineSample
                 }
                 _disposed = true;
             }
+        }
+
+        public IAsyncEnumerator<string> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            return this;
         }
     }
 }
